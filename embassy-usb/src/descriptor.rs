@@ -243,6 +243,32 @@ impl<'a> DescriptorWriter<'a> {
         );
     }
 
+    /// Writes an audio endpoint descriptor (with 9 bytes).
+    ///
+    /// # Arguments
+    ///
+    /// * `endpoint` - Endpoint previously allocated with
+    ///   [`UsbDeviceBuilder`](crate::bus::UsbDeviceBuilder).
+    pub fn endpoint_audio(&mut self, endpoint: &EndpointInfo) {
+        match self.num_endpoints_mark {
+            Some(mark) => self.buf[mark] += 1,
+            None => panic!("you can only call `endpoint` after `interface/interface_alt`."),
+        };
+
+        self.write(
+            descriptor_type::ENDPOINT,
+            &[
+                endpoint.addr.into(),   // bEndpointAddress
+                endpoint.ep_type as u8, // bmAttributes
+                endpoint.max_packet_size as u8,
+                (endpoint.max_packet_size >> 8) as u8, // wMaxPacketSize
+                endpoint.interval_ms,                  // bInterval
+                0,  // bRefresh
+                0,  // bSynchAddress
+            ],
+        );
+    }
+
     /// Writes a string descriptor.
     #[allow(unused)]
     pub(crate) fn string(&mut self, string: &str) {

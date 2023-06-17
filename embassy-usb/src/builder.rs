@@ -451,6 +451,18 @@ impl<'a, 'd, D: Driver<'d>> InterfaceAltBuilder<'a, 'd, D> {
         ep
     }
 
+    fn endpoint_audio_in(&mut self, ep_type: EndpointType, max_packet_size: u16, interval_ms: u8) -> D::EndpointIn {
+        let ep = self
+            .builder
+            .driver
+            .alloc_endpoint_in(ep_type, max_packet_size, interval_ms)
+            .expect("alloc_endpoint_in failed");
+
+        self.builder.config_descriptor.endpoint_audio(ep.info());
+
+        ep
+    }
+
     fn endpoint_out(&mut self, ep_type: EndpointType, max_packet_size: u16, interval_ms: u8) -> D::EndpointOut {
         let ep = self
             .builder
@@ -463,12 +475,27 @@ impl<'a, 'd, D: Driver<'d>> InterfaceAltBuilder<'a, 'd, D> {
         ep
     }
 
+    fn endpoint_audio_out(&mut self, ep_type: EndpointType, max_packet_size: u16, interval_ms: u8) -> D::EndpointOut {
+        let ep = self
+            .builder
+            .driver
+            .alloc_endpoint_out(ep_type, max_packet_size, interval_ms)
+            .expect("alloc_endpoint_out failed");
+
+        self.builder.config_descriptor.endpoint_audio(ep.info());
+
+        ep
+    }
+
     /// Allocate a BULK IN endpoint and write its descriptor.
     ///
     /// Descriptors are written in the order builder functions are called. Note that some
     /// classes care about the order.
     pub fn endpoint_bulk_in(&mut self, max_packet_size: u16) -> D::EndpointIn {
         self.endpoint_in(EndpointType::Bulk, max_packet_size, 0)
+    }
+    pub fn endpoint_audio_bulk_in(&mut self, max_packet_size: u16) -> D::EndpointIn {
+        self.endpoint_audio_in(EndpointType::Bulk, max_packet_size, 0)
     }
 
     /// Allocate a BULK OUT endpoint and write its descriptor.
@@ -477,6 +504,9 @@ impl<'a, 'd, D: Driver<'d>> InterfaceAltBuilder<'a, 'd, D> {
     /// classes care about the order.
     pub fn endpoint_bulk_out(&mut self, max_packet_size: u16) -> D::EndpointOut {
         self.endpoint_out(EndpointType::Bulk, max_packet_size, 0)
+    }
+    pub fn endpoint_audio_bulk_out(&mut self, max_packet_size: u16) -> D::EndpointOut {
+        self.endpoint_audio_out(EndpointType::Bulk, max_packet_size, 0)
     }
 
     /// Allocate a INTERRUPT IN endpoint and write its descriptor.
